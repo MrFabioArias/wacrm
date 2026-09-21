@@ -1,53 +1,42 @@
+# Nivel B — MVP en produccion y vitrinas.
+#
+# Corren de verdad, pero no guardan datos criticos: no compensa mirar
+# dependencias cada semana. Todo mensual y en UNA sola PR por ecosistema.
+#
+# Los avisos de SEGURIDAD llegan igual y agrupados: no dependen del intervalo ni
+# del limite de PRs abiertas.
 version: 2
 updates:
-  # Runtime + dev dependencies. Weekly on Mondays — keeps the noise
-  # predictable and aligns with a normal review cycle.
   - package-ecosystem: npm
-    directory: "/"
+    directory: /
     schedule:
-      interval: weekly
-      day: monday
-    open-pull-requests-limit: 5
-    reviewers:
-      - ArnasDon
-    labels:
-      - dependencies
+      interval: monthly
+      time: "06:00"
+      timezone: America/Bogota
+    cooldown:
+      default-days: 14
+    open-pull-requests-limit: 1
+    labels: [dependencias]
     groups:
-      # Batch related upgrades into one PR so we're not closing six
-      # independent Supabase-bumps per week.
-      supabase:
-        patterns:
-          - "@supabase/*"
-      types:
-        patterns:
-          - "@types/*"
-        update-types:
-          - minor
-          - patch
-      dev-dependencies:
-        dependency-type: development
-        update-types:
-          - minor
-          - patch
+      seguridad:
+        applies-to: security-updates
+        patterns: ["*"]
+      rutina:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: [minor, patch]
     ignore:
-      # Next + React + Tailwind are pinned exactly on purpose. Let
-      # them flow through manual major bumps when we're ready.
-      - dependency-name: next
-      - dependency-name: react
-      - dependency-name: react-dom
-      - dependency-name: tailwindcss
-      - dependency-name: eslint-config-next
+      - dependency-name: '*'
+        update-types: [version-update:semver-major]
 
-  # GitHub Actions in .github/workflows/. Catches setup-node /
-  # checkout version bumps that keep the CI matrix healthy.
   - package-ecosystem: github-actions
-    directory: "/"
+    directory: /
     schedule:
-      interval: weekly
-      day: monday
-    open-pull-requests-limit: 3
-    reviewers:
-      - ArnasDon
-    labels:
-      - dependencies
-      - github-actions
+      interval: monthly
+    cooldown:
+      default-days: 14
+    open-pull-requests-limit: 1
+    labels: [dependencias, ci]
+    groups:
+      acciones:
+        patterns: ["*"]
